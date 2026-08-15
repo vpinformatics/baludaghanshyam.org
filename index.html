@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baludaghanshyam - Service to Mankind</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Fonts: Cinzel (Heading), Mukta (Body), Tiro Devanagari (Sanskrit), Noto Serif (Gujarati) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Mukta:wght@300;400;500;600&family=Tiro+Devanagari+Sanskrit&family=Noto+Serif+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        heritage: {
+                            gold: '#D4AF37',
+                            darkGold: '#AA8C2C',
+                            red: '#8B0000',
+                            darkRed: '#5E0000',
+                            cream: '#FDFBF7',
+                            paper: '#F4ECD8',
+                            charcoal: '#2A2A2A'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['"Cinzel"', 'serif'],
+                        body: ['"Mukta"', 'sans-serif'],
+                        sanskrit: ['"Tiro Devanagari Sanskrit"', 'serif'],
+                        gujarati: ['"Noto Serif Gujarati"', 'serif'],
+                    },
+                    boxShadow: {
+                        'heritage': '0 10px 30px -10px rgba(139, 0, 0, 0.2)',
+                        'gold-glow': '0 0 20px rgba(212, 175, 55, 0.3)',
+                    },
+                    backgroundImage: {
+                        'mandala-pattern': "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M30 0c16.569 0 30 13.431 30 30S46.569 60 30 60 0 46.569 0 30 13.431 0 30 0zm0 5c13.807 0 25 11.193 25 25S43.807 55 30 55 5 43.807 5 30 16.193 5 30 5zm0 10c8.284 0 15 6.716 15 15s-6.716 15-15 15-15-6.716-15-15 6.716-15 15-15z\" fill=\"%23D4AF37\" fill-opacity=\"0.05\" fill-rule=\"evenodd\"/%3E%3C/svg%3E')",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Mukta', sans-serif;
+            background-color: #F8F4E6; /* Slightly warmer, more parchment-like base */
+            color: #2A2A2A;
+            overflow-x: hidden;
+        }
+
+        /* Enhanced Noise Texture for a grainier, older feel */
+        .noise-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.05; /* Increased opacity slightly */
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+        
+        /* New Vintage overlay for sections */
+        .texture-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .fade-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Carousel specific styles */
+        .hero-slider {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out, transform 8s linear;
+            transform: scale(1.05);
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .gold-border {
+            border: 1px solid #D4AF37;
+            position: relative;
+        }
+        .gold-border::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            pointer-events: none;
+        }
+        
+        /* Ornamental divider */
+        .ornament-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .ornament-divider::before, .ornament-divider::after {
+            content: '';
+            height: 1px;
+            width: 60px;
+            background: linear-gradient(to right, transparent, #D4AF37, transparent);
+        }
+        .ornament-divider span {
+            color: #D4AF37;
+            font-size: 1.2rem;
+            margin: 0 15px;
+        }
+        
+        /* Vintage Frame */
+        .vintage-frame {
+            border: 12px solid #F4ECD8;
+            outline: 1px solid #D4AF37;
+            outline-offset: -8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 15px 30px rgba(139, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="antialiased relative bg-[#F8F4E6]">
+
+    <div class="vintage-overlay noise-bg"></div>
+
+    <nav class="fixed w-full z-50 bg-[#F8F4E6]/95 backdrop-blur-md shadow-md border-b-2 border-[#D4AF37]/40 transition-all duration-300 py-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Spiritual Title & Logo -->
+                <div class="flex items-center cursor-pointer group" onclick="window.scrollTo(0,0)">
+                    <div class="relative shrink-0 p-1 border border-heritage-gold/30 bg-white shadow-inner group-hover:border-heritage-gold transition-colors duration-500 mr-4">
+                        <img src="logo.jpg" alt="Shree Swaminarayan Vatsalya Dham Logo" class="h-14 sm:h-16 w-auto object-contain">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-heading font-bold text-xl md:text-3xl text-heritage-darkRed tracking-widest drop-shadow-sm">Baludaghanshyam</span>
+                        <span class="font-sanskrit text-xs md:text-sm text-heritage-darkGold tracking-[0.2em] mt-1">श्री स्वामिनारायण वात्सल्य धाम</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-10">
+                    <a href="#about" class="text-heritage-darkRed hover:text-heritage-gold font-heading font-semibold tracking-[0.15em] transition-colors text-sm uppercase relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:w-0 after:h-[2px] after:bg-heritage-gold after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Legacy</a>
+                    <a href="#services" class="text-heritage-darkRed hover:text-heritage-gold font-heading font-semibold tracking-[0.15em] transition-colors text-sm uppercase relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:w-0 after:h-[2px] after:bg-heritage-gold after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Our Seva</a>
+                    <a href="#project" class="text-heritage-darkRed hover:text-heritage-gold font-heading font-semibold tracking-[0.15em] transition-colors text-sm uppercase relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:w-0 after:h-[2px] after:bg-heritage-gold after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Projects</a>
+                    <a href="#donate" class="bg-gradient-to-b from-heritage-red to-heritage-darkRed text-white px-8 py-2.5 rounded-sm font-heading font-bold tracking-widest transition-all shadow-heritage hover:shadow-xl border border-heritage-gold/50 hover:border-heritage-gold">
+                        DONATE
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-heritage-red focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#FDFBF7] border-t border-[#D4AF37]/20 shadow-xl absolute w-full left-0">
+            <div class="px-4 py-4 space-y-3">
+                <a href="#about" class="block px-3 py-2 text-[#2A2A2A] hover:text-[#AA8C2C] font-heading tracking-wide border-b border-[#F4ECD8]">Legacy</a>
+                <a href="#services" class="block px-3 py-2 text-[#2A2A2A] hover:text-[#AA8C2C] font-heading tracking-wide border-b border-[#F4ECD8]">Our Seva</a>
+                <a href="#project" class="block px-3 py-2 text-[#2A2A2A] hover:text-[#AA8C2C] font-heading tracking-wide border-b border-[#F4ECD8]">Projects</a>
+                <a href="#donate" class="block text-center bg-[#8B0000] text-white px-3 py-3 rounded-sm font-heading tracking-widest shadow-md mt-4">DONATE</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- REFINED HERO SECTION -->
+    <header id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 border-b-[16px] border-double border-[#5E0000]">
+        
+        <!-- Authentic Kalupur Mandir Background -->
+        <div class="absolute inset-0 z-0 bg-[#2A2A2A]">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Shree_Swaminarayan_Mandir_Kalupur_Ahmedabad.jpg/1920px-Shree_Swaminarayan_Mandir_Kalupur_Ahmedabad.jpg" alt="Shree Swaminarayan Mandir Kalupur" class="w-full h-full object-cover object-top opacity-40 mix-blend-overlay sepia-[0.4]" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/a5/Kalupur_Swaminarayan_Mandir.jpg';"/>
+            <div class="absolute inset-0 bg-gradient-to-b from-[#111111]/90 via-[#2A2A2A]/70 to-[#2A2A2A]/95"></div>
+            <!-- Mandala pattern overlay -->
+            <div class="absolute inset-0 bg-mandala-pattern opacity-30"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 w-full max-w-6xl mx-auto flex flex-col items-center mt-10 md:mt-16">
+            
+            <div class="fade-up mb-8">
+                <p class="text-[#D4AF37] font-heading tracking-[0.4em] uppercase text-sm md:text-lg font-bold mb-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">Jay Swaminarayan</p>
+                <div class="ornament-divider"><span>✥</span></div>
+            </div>
+
+            <!-- Elegant Main Title -->
+            <h1 class="fade-up text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-[#F8F4E6] mb-6 leading-[1.1] tracking-tight drop-shadow-2xl" style="transition-delay: 100ms;">
+                Service to Mankind
+                <span class="block text-[#D4AF37] italic font-medium mt-4 text-4xl md:text-5xl lg:text-6xl drop-shadow-xl" style="font-family: 'Cinzel', serif; letter-spacing: 0.05em;">is Service to God</span>
+            </h1>
+
+            <!-- Shloka Container - Elegant & Refined -->
+            <div class="fade-up mt-16 w-full max-w-4xl relative" style="transition-delay: 200ms;">
+                
+                <!-- Classic Ornamental Border (More ornate) -->
+                <div class="absolute inset-0 border-2 border-[#D4AF37]/40 pointer-events-none"></div>
+                <div class="absolute inset-2 border border-[#D4AF37]/20 pointer-events-none"></div>
+                
+                <!-- Corner Ornaments -->
+                <div class="absolute -top-3 -left-3 text-[#D4AF37] text-2xl">⚜</div>
+                <div class="absolute -top-3 -right-3 text-[#D4AF37] text-2xl">⚜</div>
+                <div class="absolute -bottom-3 -left-3 text-[#D4AF37] text-2xl">⚜</div>
+                <div class="absolute -bottom-3 -right-3 text-[#D4AF37] text-2xl">⚜</div>
+
+                <div class="px-6 py-10 md:px-12 md:py-14 bg-black/60 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+                    <div class="absolute inset-0 bg-noise opacity-20 pointer-events-none"></div>
+                    
+                    <!-- Original Sanskrit -->
+                    <div class="font-sanskrit text-2xl md:text-3xl text-[#F8F4E6] mb-6 leading-relaxed tracking-wider drop-shadow-lg font-medium text-center">
+                        कर्तव्या द्वारिकामुख्यतीर्थयात्रा यथाविधि ।<br>
+                        सर्वैरपि यथाशक्ति भाव्यं दीनेषु वत्सलै: ।।८३।।
+                    </div>
+
+                    <div class="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mb-6"></div>
+
+                    <!-- Gujarati Translation -->
+                    <div class="font-gujarati text-lg md:text-xl text-[#D4AF37] mb-8 leading-loose tracking-wide drop-shadow-md text-center max-w-3xl mx-auto">
+                        અને સર્વે જે અમારા આશ્રિત તેમણે દ્વારિકા આદિક જે તીર્થ તેમની યાત્રા જે તે પોતાના સામર્થ્ય પ્રમાણે યથાવિધિએ કરીને કરવી અને વળી પોતાના સામર્થ્ય પ્રમાણે દીનજનને વિષે દયાવાન થવું. ।।૮૩।।
+                    </div>
+                    
+                    <!-- English Translation -->
+                    <p class="text-gray-300 font-heading text-base md:text-lg max-w-2xl mx-auto leading-relaxed text-center font-light italic">
+                        "All My disciples shall perform the pilgrimage to Dwarka and other holy places according to their capacity, and they shall be compassionate towards the poor and needy according to their means."
+                    </p>
+                    
+                    <!-- Citation -->
+                    <div class="mt-8 flex items-center justify-center gap-4">
+                        <div class="h-[1px] w-12 bg-[#D4AF37]/50"></div>
+                        <p class="text-[#D4AF37] font-heading text-xs md:text-sm tracking-[0.25em] uppercase font-bold">Shikshapatri, Slok 83</p>
+                        <div class="h-[1px] w-12 bg-[#D4AF37]/50"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action Button -->
+            <div class="fade-up mt-16 mb-12" style="transition-delay: 300ms;">
+                <a href="#services" class="group relative inline-flex items-center justify-center gap-3 text-[#F8F4E6] bg-[#5E0000]/80 backdrop-blur-sm font-heading tracking-widest uppercase text-sm py-4 px-12 border border-[#D4AF37] rounded-sm overflow-hidden transition-all duration-500 hover:bg-[#8B0000] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                    <span class="relative z-10 font-bold transition-colors duration-300">Discover Our Seva</span>
+                    <div class="absolute inset-0 bg-[#D4AF37]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section id="about" class="py-24 md:py-32 relative bg-[#F8F4E6] z-10 overflow-hidden border-b-4 border-[#D4AF37]">
+        <div class="texture-overlay"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-20 items-center">
+                
+                <!-- Imagery - Authentic Kalupur Murti & Swaminarayan Bhagwan -->
+                <div class="lg:w-1/2 relative fade-up w-full flex justify-center lg:justify-start pt-8">
+                    <div class="relative w-full max-w-lg mx-auto">
+                        <!-- Main Frame: Bhagwan Swaminarayan -->
+                        <div class="relative w-[78%] aspect-[9/16] overflow-hidden vintage-frame bg-white z-10">
+                            <div class="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FDFBF7]">
+                                <img src="baludaGhanshyam.jpg" alt="Baluda Ghanshyam Maharaj Murti" class="w-full h-full object-cover object-center sepia-[0.15] contrast-[1.05]">
+                            </div>
+                        </div>
+                        
+                        <!-- Secondary Frame: Kalupur Mandir (Offset) -->
+                        <div class="absolute -bottom-12 -right-4 md:-right-12 w-1/2 aspect-[3/4] overflow-hidden border-[8px] border-[#FDFBF7] shadow-2xl bg-white z-20 outline outline-1 outline-[#D4AF37]">
+                            <div class="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FDFBF7]">
+                                <img src="baludaGhanshyam_small.jpg" alt="Baluda Ghanshyam Maharaj - Divine Darshan" class="w-full h-full object-cover object-[center_20%] sepia-[0.15] contrast-[1.05]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="lg:w-1/2 space-y-8 fade-up mt-16 lg:mt-0" style="transition-delay: 100ms;">
+                    <div class="flex items-center gap-4 mb-2">
+                        <div class="h-[2px] w-16 bg-[#5E0000]"></div>
+                        <span class="text-[#5E0000] font-heading tracking-[0.2em] uppercase text-sm font-bold">Our Inspiration</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-[#2A2A2A] leading-tight drop-shadow-sm">
+                        The Divine Legacy of <br><span class="text-[#AA8C2C] italic">Shree Swaminarayan</span>
+                    </h2>
+                    
+                    <p class="text-xl text-[#3a3a3a] leading-relaxed font-heading font-medium">
+                        During His seven-year journey as Nilkanth Varni, Bhagwan Swaminarayan walked barefoot across India, witnessing profound suffering. His heart melted with compassion, laying the absolute foundation for our humanitarian ethos.
+                    </p>
+                    
+                    <div class="border-l-4 border-[#AA8C2C] pl-8 py-4 my-8 bg-[#F4ECD8]/60 backdrop-blur-sm relative">
+                        <i class="fa-solid fa-quote-left absolute top-2 left-2 text-[#AA8C2C]/20 text-3xl"></i>
+                        <p class="text-[#2a2a2a] leading-relaxed font-semibold italic text-lg z-10 relative">
+                            In the devastating famines of the early 19th century, He established a vast network of <strong class="text-[#5E0000]">Sadavrats (almshouses)</strong>, commanding His saints to distribute free food to all, breaking every barrier of caste and creed.
+                        </p>
+                    </div>
+
+                    <p class="text-lg text-[#3a3a3a] leading-relaxed font-body">
+                        Preaching <em class="font-heading font-semibold text-[#5E0000]">'Jiv Daya'</em> (compassion for all) as the highest devotion, He mandated followers to donate a portion of their income (Dharmada). <strong>Baludaghanshyam</strong> operates strictly upon this divine mandate, serving the destitute as a direct service to God.
+                    </p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-[#1a1a1a] text-white relative border-y-[12px] border-double border-[#D4AF37]">
+        <div class="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Shree_Swaminarayan_Mandir_Kalupur_Ahmedabad.jpg/1920px-Shree_Swaminarayan_Mandir_Kalupur_Ahmedabad.jpg')] bg-cover bg-center opacity-15 mix-blend-luminosity sepia-[0.2]"></div>
+        
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center fade-up">
+            <div class="ornament-divider mb-8"><span>✤</span></div>
+            <h3 class="text-3xl md:text-4xl font-heading text-[#D4AF37] mb-12 tracking-wider">From the Swabhavik Chesta</h3>
+            
+            <div class="bg-black/70 p-10 md:p-16 border-2 border-[#D4AF37]/30 rounded-sm shadow-[0_0_40px_rgba(212,175,55,0.15)] relative">
+                <!-- Inner ornate border -->
+                <div class="absolute inset-2 border border-[#D4AF37]/10 pointer-events-none"></div>
+                
+                <i class="fa-solid fa-om text-5xl text-[#D4AF37]/40 mb-6 block"></i>
+                <p class="font-sanskrit text-3xl md:text-4xl text-[#F8F4E6] mb-6 drop-shadow-md">" जेने काजे रे, सेवे जाई वनने... "</p>
+                <p class="text-xl md:text-2xl font-heading leading-relaxed text-gray-300 italic mb-8">
+                    "Recalling the profound compassion of the Lord, who ventured into dense forests and remote villages solely for the upliftment and service of souls."
+                </p>
+                <div class="w-24 h-[2px] bg-[#8B0000] mx-auto mb-8"></div>
+                <p class="text-sm text-[#D4AF37] font-heading tracking-[0.25em] uppercase font-bold">We strive to walk on His path of absolute selflessness.</p>
+            </div>
+            <div class="ornament-divider mt-12"><span>✤</span></div>
+        </div>
+    </section>
+
+    <section id="services" class="py-28 bg-[#F4ECD8] relative">
+        <div class="texture-overlay opacity-30"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-20 fade-up">
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <div class="h-[2px] w-16 bg-[#5E0000]"></div>
+                    <span class="text-[#5E0000] font-heading tracking-[0.2em] uppercase text-sm font-bold">Activities</span>
+                    <div class="h-[2px] w-16 bg-[#5E0000]"></div>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-heading font-bold text-[#2A2A2A] drop-shadow-sm">Our Sacred Seva</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Service 1 -->
+                <div class="group fade-up bg-[#F8F4E6] shadow-xl hover:shadow-2xl transition-all duration-500 border border-[#D4AF37]/30 transform hover:-translate-y-2">
+                    <div class="h-72 relative overflow-hidden p-2 bg-white m-2 border border-gray-200">
+                        <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" alt="Anna Daan" class="w-full h-full object-cover sepia-[0.3] group-hover:scale-110 group-hover:sepia-0 transition-all duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#2A2A2A]/90 via-[#2A2A2A]/20 to-transparent m-2"></div>
+                        <h3 class="absolute bottom-8 left-8 text-3xl font-heading font-bold text-white tracking-widest drop-shadow-md">Anna Daan</h3>
+                    </div>
+                    <div class="p-8 relative">
+                        <div class="absolute -top-8 right-8 w-16 h-16 bg-[#5E0000] text-[#D4AF37] rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-[#D4AF37]">
+                            <i class="fa-solid fa-wheat-awn"></i>
+                        </div>
+                        <h4 class="font-heading font-bold text-xl text-[#2A2A2A] mb-4 mt-2">Nourishing Lives</h4>
+                        <p class="text-[#4a4a4a] mb-4 text-base leading-relaxed font-body">
+                            Following the tradition of Sadavrats, we provide monthly ration kits and hot meals to families facing poverty. We ensure no one sleeps hungry.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="group fade-up bg-[#F8F4E6] shadow-xl hover:shadow-2xl transition-all duration-500 border border-[#D4AF37]/30 transform hover:-translate-y-2" style="transition-delay: 100ms;">
+                    <div class="h-72 relative overflow-hidden p-2 bg-white m-2 border border-gray-200">
+                        <img src="https://images.unsplash.com/photo-1516307365426-bea591f05011?auto=format&fit=crop&q=80&w=1000" alt="Elderly Care" class="w-full h-full object-cover sepia-[0.3] group-hover:scale-110 group-hover:sepia-0 transition-all duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#2A2A2A]/90 via-[#2A2A2A]/20 to-transparent m-2"></div>
+                        <h3 class="absolute bottom-8 left-8 text-3xl font-heading font-bold text-white tracking-widest drop-shadow-md">Elderly Care</h3>
+                    </div>
+                    <div class="p-8 relative">
+                        <div class="absolute -top-8 right-8 w-16 h-16 bg-[#AA8C2C] text-white rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white">
+                            <i class="fa-solid fa-person-cane"></i>
+                        </div>
+                        <h4 class="font-heading font-bold text-xl text-[#2A2A2A] mb-4 mt-2">Vrudhashram</h4>
+                        <p class="text-[#4a4a4a] mb-4 text-base leading-relaxed font-body">
+                            Creating a peaceful sanctuary for abandoned or helpless elderly people. We offer medical care, nutritious food, and a loving, spiritual environment.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="group fade-up bg-[#F8F4E6] shadow-xl hover:shadow-2xl transition-all duration-500 border border-[#D4AF37]/30 transform hover:-translate-y-2" style="transition-delay: 200ms;">
+                    <div class="h-72 relative overflow-hidden p-2 bg-white m-2 border border-gray-200">
+                        <img src="https://images.unsplash.com/photo-1511949860663-92c5c57d48a7?auto=format&fit=crop&q=80&w=1000" alt="Child Welfare" class="w-full h-full object-cover sepia-[0.3] group-hover:scale-110 group-hover:sepia-0 transition-all duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#2A2A2A]/90 via-[#2A2A2A]/20 to-transparent m-2"></div>
+                        <h3 class="absolute bottom-8 left-8 text-3xl font-heading font-bold text-white tracking-widest drop-shadow-md">Bal Sanskar</h3>
+                    </div>
+                    <div class="p-8 relative">
+                        <div class="absolute -top-8 right-8 w-16 h-16 bg-[#2A2A2A] text-[#D4AF37] rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-[#D4AF37]">
+                            <i class="fa-solid fa-hands-holding-child"></i>
+                        </div>
+                        <h4 class="font-heading font-bold text-xl text-[#2A2A2A] mb-4 mt-2">Nurturing Futures</h4>
+                        <p class="text-[#4a4a4a] mb-4 text-base leading-relaxed font-body">
+                            Nurturing the future by providing educational materials, moral guidance (Sanskars), and food support to underprivileged children in rural areas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SEVA GALLERY SECTION -->
+    <section class="py-24 bg-[#EBE3CD] relative border-y border-[#D4AF37]/40">
+        <div class="texture-overlay opacity-40"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 fade-up">
+                <span class="text-[#5E0000] font-heading tracking-[0.2em] uppercase text-sm font-bold block mb-4">Glimpses of Compassion</span>
+                <h2 class="text-4xl md:text-5xl font-heading font-bold text-[#2A2A2A] mb-12 drop-shadow-sm">Our Seva in Action</h2>
+                
+                <div class="relative w-full max-w-5xl mx-auto h-72 md:h-[28rem] mb-16 shadow-2xl overflow-hidden vintage-frame bg-white p-2">
+                    <img src="https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&q=80&w=1200" alt="Saints guiding Seva" class="w-full h-full object-cover sepia-[0.2]">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col justify-end p-8 md:p-12 text-left m-2 border border-white/10">
+                        <h3 class="text-[#D4AF37] font-heading text-3xl md:text-4xl font-bold mb-4 drop-shadow-lg">Guided by Revered Saints</h3>
+                        <p class="text-[#F8F4E6] font-heading text-base md:text-lg max-w-3xl opacity-90 leading-relaxed">Our relief efforts and food distributions are carried out under the direct spiritual guidance and active participation of Saints from the Swaminarayan Sampraday, ensuring every act of charity is a true devotion to God.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 fade-up">
+                <div class="group relative overflow-hidden bg-white p-2 shadow-lg vintage-frame">
+                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800" alt="Food Distribution" class="w-full h-full aspect-square object-cover sepia-[0.4] group-hover:sepia-0 group-hover:scale-105 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-white p-2 shadow-lg vintage-frame">
+                    <img src="https://images.unsplash.com/photo-1593113630400-ea4288922497?auto=format&fit=crop&q=80&w=800" alt="Anna Daan Seva" class="w-full h-full aspect-square object-cover sepia-[0.4] group-hover:sepia-0 group-hover:scale-105 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-white p-2 shadow-lg vintage-frame">
+                    <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800" alt="Helping the Needy" class="w-full h-full aspect-square object-cover sepia-[0.4] group-hover:sepia-0 group-hover:scale-105 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-[#5E0000] aspect-square shadow-lg vintage-frame flex flex-col items-center justify-center p-8 text-center border-none">
+                    <i class="fa-solid fa-hands-holding-circle text-5xl text-[#D4AF37] mb-4"></i>
+                    <h4 class="font-heading font-bold text-xl text-[#F8F4E6] mb-3 tracking-wider">Join the Seva</h4>
+                    <p class="text-sm text-[#D4AF37]/80 font-body">Your contributions help us reach more remote villages and families in need.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="project" class="py-28 bg-[#F8F4E6] relative border-b-4 border-[#D4AF37]">
+        <div class="texture-overlay"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-16 items-center mb-20">
+                <div class="lg:w-1/2 fade-up">
+                    <span class="text-[#5E0000] font-heading tracking-[0.2em] uppercase text-sm font-bold mb-4 block">Current Initiative</span>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-[#2A2A2A] mb-8 drop-shadow-sm">Building a New Sanctuary</h2>
+                    
+                    <p class="text-xl text-[#3a3a3a] mb-6 font-heading font-medium leading-relaxed">
+                        By the grace of Shree Swaminarayan Bhagwan, we are expanding our capacity to serve. A monumental new facility is actively under construction.
+                    </p>
+                    <p class="text-[#4a4a4a] text-lg leading-relaxed mb-10 font-body">
+                        This complex will integrate an expanded Vrudhashram (Old Age Home), dedicated educational halls for children, a mega-kitchen to support large-scale Anna Daan, and a prayer hall for daily devotion.
+                    </p>
+                    <a href="#donate" class="inline-block bg-[#2A2A2A] text-[#D4AF37] px-10 py-4 font-heading font-bold tracking-widest shadow-xl hover:bg-[#111] border border-[#D4AF37]/50 hover:border-[#D4AF37] transition-all">
+                        SUPPORT CONSTRUCTION
+                    </a>
+                </div>
+                
+                <div class="lg:w-1/2 w-full fade-up">
+                    <!-- Featured Image with thick vintage border -->
+                    <div class="vintage-frame bg-white p-3 transform rotate-2 hover:rotate-0 transition-transform duration-700 shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=1200" alt="Construction Site" class="w-full h-80 object-cover sepia-[0.3]">
+                        <div class="p-4 text-center text-sm font-heading text-[#5E0000] font-bold tracking-[0.15em] uppercase border-t border-[#D4AF37]/20 mt-3 bg-[#F4ECD8]/50">
+                            Main Complex Construction
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Construction Gallery Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 fade-up">
+                <div class="group relative overflow-hidden bg-white p-1 vintage-frame aspect-square">
+                    <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800" alt="Construction Progress 1" class="w-full h-full object-cover sepia-[0.5] group-hover:sepia-0 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-white p-1 vintage-frame aspect-square">
+                    <img src="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&q=80&w=800" alt="Construction Progress 2" class="w-full h-full object-cover sepia-[0.5] group-hover:sepia-0 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-white p-1 vintage-frame aspect-square">
+                    <img src="https://images.unsplash.com/photo-1508450859948-4e04fabaa4ea?auto=format&fit=crop&q=80&w=800" alt="Construction Progress 3" class="w-full h-full object-cover sepia-[0.5] group-hover:sepia-0 transition-all duration-700">
+                </div>
+                <div class="group relative overflow-hidden bg-white p-1 vintage-frame aspect-square">
+                    <img src="https://images.unsplash.com/photo-1517089152318-42ec560349c0?auto=format&fit=crop&q=80&w=800" alt="Construction Progress 4" class="w-full h-full object-cover sepia-[0.5] group-hover:sepia-0 transition-all duration-700">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="donate" class="py-28 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-[#5E0000] relative border-b-[16px] border-double border-[#D4AF37]">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 to-transparent pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center fade-up relative z-10">
+            <div class="ornament-divider mb-8"><span>✧</span></div>
+            <i class="fa-solid fa-hands-holding-circle text-6xl text-[#D4AF37] mb-8 drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]"></i>
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-[#F8F4E6] mb-8 drop-shadow-md">Contribute to the Divine Cause</h2>
+            <p class="text-[#F4ECD8]/90 mb-12 max-w-2xl mx-auto font-heading text-xl leading-relaxed">
+                Your donations help us provide food, shelter, and care to those who need it most. Every contribution is a step towards fulfilling Bhagwan's vision of a compassionate society.
+            </p>
+            
+            <div class="bg-[#F8F4E6] p-10 md:p-14 shadow-2xl vintage-frame relative">
+                
+                <h3 class="text-3xl font-heading font-bold text-[#5E0000] mb-8">Secure Online Donation</h3>
+                
+                <!-- Payment Gateway Placeholder -->
+                <div class="border-2 border-dashed border-[#AA8C2C] bg-[#F4ECD8]/50 p-10 mb-10">
+                    <i class="fa-regular fa-credit-card text-5xl text-[#AA8C2C] mb-4"></i>
+                    <p class="text-[#2A2A2A] font-bold text-lg mb-2 font-heading tracking-wide">Payment Gateway Integration Pending</p>
+                    <p class="text-sm text-[#4a4a4a] font-body">Secure Razorpay / UPI gateway will be activated here soon.</p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-6">
+                    <button class="bg-[#5E0000] text-white px-10 py-4 font-heading font-bold tracking-widest border border-[#5E0000] hover:bg-transparent hover:text-[#5E0000] transition-colors opacity-70 cursor-not-allowed">
+                        DONATE VIA UPI
+                    </button>
+                    <button class="bg-[#2A2A2A] text-[#D4AF37] px-10 py-4 font-heading font-bold tracking-widest border border-[#2A2A2A] hover:bg-transparent hover:text-[#2A2A2A] transition-colors opacity-70 cursor-not-allowed">
+                        BANK TRANSFER
+                    </button>
+                </div>
+            </div>
+            <div class="ornament-divider mt-12"><span>✧</span></div>
+        </div>
+    </section>
+
+    <footer class="bg-[#1a1a1a] text-[#F4ECD8] pt-20 pb-10 relative overflow-hidden">
+        <div class="absolute inset-0 bg-noise opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+                <div>
+                    <div class="bg-white inline-block p-2 mb-6 vintage-frame border-[6px]">
+                        <img src="logo.jpg" alt="Shree Swaminarayan Vatsalya Dham Logo" class="h-32 w-auto object-contain">
+                    </div>
+                    <p class="text-gray-400 font-heading text-base leading-relaxed mb-4">
+                        Dedicated to the selfless service of the elderly and children, carrying forward the divine mandate of Jiv Daya established by Shree Swaminarayan Bhagwan.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-heading font-bold text-lg text-white mb-6 tracking-widest uppercase">Quick Links</h4>
+                    <ul class="space-y-3 text-gray-400 font-body text-sm">
+                        <li><a href="#about" class="hover:text-heritage-gold transition-colors block">Our Legacy</a></li>
+                        <li><a href="#services" class="hover:text-heritage-gold transition-colors block">Seva Activities</a></li>
+                        <li><a href="#project" class="hover:text-heritage-gold transition-colors block">New Construction</a></li>
+                        <li><a href="#donate" class="hover:text-heritage-gold transition-colors block">Make a Donation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-heading font-bold text-lg text-white mb-6 tracking-widest uppercase">Contact Us</h4>
+                    <ul class="space-y-4 text-gray-400 font-body text-sm">
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-user mr-4 text-heritage-gold w-4"></i>
+                            <span class="text-white font-medium">Ashok Thakkar</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-location-dot mt-1 mr-4 text-heritage-gold w-4"></i>
+                            <a href="https://maps.app.goo.gl/wQYYiAXTkg57D7oJ8?g_st=iw" target="_blank" class="hover:text-heritage-gold transition-colors leading-relaxed">
+                                Shree Swaminarayan Vatsalya Dham, <br>Kaliyana, Gujarat, India
+                                <span class="block mt-1 text-heritage-gold underline text-xs"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>View on Google Maps</span>
+                            </a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-phone mr-4 text-heritage-gold w-4"></i>
+                            <a href="tel:+917600964506" class="hover:text-heritage-gold transition-colors">+91 7600 964 506</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-envelope mr-4 text-heritage-gold w-4"></i>
+                            <a href="mailto:seva@baludaghanshyam.org" class="hover:text-heritage-gold transition-colors">seva@baludaghanshyam.org</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-xs text-gray-500 font-heading tracking-widest uppercase">
+                <p>&copy; 2023 Baludaghanshyam Trust. Jay Swaminarayan.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+
+        // Scroll Animations (Fade-up)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.fade-up');
+            animatedElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
