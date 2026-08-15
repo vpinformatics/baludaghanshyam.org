@@ -1,9 +1,10 @@
 name: Deploy to hosting
 
-# Publishes the site to the live host over FTP/FTPS whenever main moves.
-# Run it manually first (Actions > Deploy to hosting > Run workflow) with
-# dry-run enabled, to confirm the server directory is right before anything
-# is actually overwritten.
+# Publishes the site to the live server over SSH (rsync) on every push to main.
+#
+# Before the first real run, trigger this manually with dry-run enabled:
+#   Actions > Deploy to hosting > Run workflow > tick "dry run"
+# That prints exactly which files would be sent and transfers nothing.
 
 on:
   push:
@@ -11,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "List what would change, upload nothing"
+        description: "List what would transfer, send nothing"
         type: boolean
         default: false
 
@@ -24,46 +25,99 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    env:
+      # Absolute path to the site root on the server. Override with the
+      # DEPLOY_PATH repository variable if it ever moves.
+      TARGET: ${{ vars.DEPLOY_PATH || '/opt/docker-projects/frontend-sites/baludaghanshyam.org' }}
+      PORT: ${{ vars.SSH_PORT || '22' }}
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Verify required secrets are present
         env:
-          SERVER: ${{ secrets.FTP_SERVER }}
-          USERNAME: ${{ secrets.FTP_USERNAME }}
-          PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           missing=""
-          [ -z "$SERVER" ]   && missing="$missing FTP_SERVER"
-          [ -z "$USERNAME" ] && missing="$missing FTP_USERNAME"
-          [ -z "$PASSWORD" ] && missing="$missing FTP_PASSWORD"
+          [ -z "$HOST" ] && missing="$missing SSH_HOST"
+          [ -z "$USER" ] && missing="$missing SSH_USER"
+          [ -z "$KEY" ]  && missing="$missing SSH_PRIVATE_KEY"
           if [ -n "$missing" ]; then
             echo "::error::Missing repository secret(s):$missing"
             echo "Add them under Settings > Secrets and variables > Actions."
             exit 1
           fi
 
-      - name: Upload site
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          # Most cPanel hosts serve from ./public_html/. Override with the
-          # FTP_SERVER_DIR repository variable if yours differs.
-          # The trailing slash is required.
-          server-dir: ${{ vars.FTP_SERVER_DIR || './public_html/' }}
-          # 'ftps' is the safe default. Set the FTP_PROTOCOL variable to
-          # 'ftp' only if the host genuinely has no TLS support.
-          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
-          local-dir: ./
-          dry-run: ${{ inputs.dry_run == true }}
-          # Keeps a manifest on the server so only changed files transfer.
-          state-name: .ftp-deploy-sync-state.json
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github/**
-            **/node_modules/**
-            README.md
-            .gitignore
+      - name: Configure SSH
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Prefer a pinned host key. Fall back to scanning it on first use,
+          # which trusts whatever answers - set the SSH_KNOWN_HOSTS secret
+          # (output of: ssh-keyscan -p 22 <host>) to close that gap.
+          if [ -n "${KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_KNOWN_HOSTS not set - trusting the host key on first contact."
+            ssh-keyscan -p "$PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Show what will be sent
+        if: ${{ inputs.dry_run == true }}
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+        run: |
+          set -euo pipefail
+          echo "Target: $USER@$HOST:$TARGET (port $PORT)"
+          echo "--- remote directory contents before deploy ---"
+          ssh -i ~/.ssh/deploy_key -p "$PORT" "$USER@$HOST" \
+            "ls -la '$TARGET' 2>/dev/null || echo '(directory does not exist yet)'"
+
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+        run: |
+          set -euo pipefail
+
+          # --delete is deliberately NOT used by default. This directory may
+          # hold server-side files that are not in the repo (compose files,
+          # nginx config, uploads); deleting them would break the site.
+          # Set the DEPLOY_DELETE variable to "true" only once you have
+          # confirmed the directory holds nothing but the published site.
+          DELETE_FLAG=""
+          if [ "${{ vars.DEPLOY_DELETE || 'false' }}" = "true" ]; then
+            DELETE_FLAG="--delete"
+          fi
+
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run || false }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+            echo "DRY RUN - nothing will actually be written."
+          fi
+
+          rsync -rlvz --checksum --human-readable \
+            $DRY_FLAG $DELETE_FLAG \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.gitignore' \
+            --exclude '.claude/' \
+            --exclude 'node_modules/' \
+            --exclude 'README.md' \
+            -e "ssh -i ~/.ssh/deploy_key -p $PORT" \
+            ./ "$USER@$HOST:$TARGET/"
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
