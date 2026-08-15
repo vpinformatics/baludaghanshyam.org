@@ -1,0 +1,69 @@
+name: Deploy to hosting
+
+# Publishes the site to the live host over FTP/FTPS whenever main moves.
+# Run it manually first (Actions > Deploy to hosting > Run workflow) with
+# dry-run enabled, to confirm the server directory is right before anything
+# is actually overwritten.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "List what would change, upload nothing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required secrets are present
+        env:
+          SERVER: ${{ secrets.FTP_SERVER }}
+          USERNAME: ${{ secrets.FTP_USERNAME }}
+          PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          missing=""
+          [ -z "$SERVER" ]   && missing="$missing FTP_SERVER"
+          [ -z "$USERNAME" ] && missing="$missing FTP_USERNAME"
+          [ -z "$PASSWORD" ] && missing="$missing FTP_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Add them under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Upload site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Most cPanel hosts serve from ./public_html/. Override with the
+          # FTP_SERVER_DIR repository variable if yours differs.
+          # The trailing slash is required.
+          server-dir: ${{ vars.FTP_SERVER_DIR || './public_html/' }}
+          # 'ftps' is the safe default. Set the FTP_PROTOCOL variable to
+          # 'ftp' only if the host genuinely has no TLS support.
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+          local-dir: ./
+          dry-run: ${{ inputs.dry_run == true }}
+          # Keeps a manifest on the server so only changed files transfer.
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            README.md
+            .gitignore

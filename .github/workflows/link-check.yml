@@ -1,0 +1,64 @@
+name: Check image links
+
+# The site hotlinks a lot of Unsplash and Wikimedia photography, and several
+# of those URLs have already gone 404 once, silently leaving blank frames on
+# the live page. This checks every image reference and fails loudly instead.
+#
+# It does not gate deploys - it runs on pull requests and weekly.
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check every image reference resolves
+        run: |
+          set -uo pipefail
+
+          # Remote URLs from src="..." and CSS url('...')
+          grep -oE '(src=|url\()["'"'"']?https://[^"'"'"')  ]+' index.html \
+            | sed -E 's/^(src=|url\()["'"'"']?//' | sort -u > remote.txt
+
+          # Local files: any src="..." or href="..." that is not a URL,
+          # a fragment, or a mail/tel link. Covers the favicon too.
+          grep -oE '(src|href)="[^"]+"' index.html \
+            | sed -E 's/^(src|href)="//; s/"$//' \
+            | grep -vE '^(https?:|//|#|mailto:|tel:|data:)' \
+            | sort -u > local.txt
+
+          fail=0
+
+          echo "== Local files =="
+          while read -r f; do
+            [ -z "$f" ] && continue
+            if [ -f "$f" ]; then
+              echo "  ok      $f"
+            else
+              echo "  MISSING $f"; fail=1
+            fi
+          done < local.txt
+
+          echo "== Remote URLs =="
+          while read -r u; do
+            [ -z "$u" ] && continue
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 25 \
+                     -A 'Mozilla/5.0 (link-check; +github-actions)' "$u" || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "  ok  $code  $u"
+            else
+              echo "  BAD $code  $u"; fail=1
+            fi
+          done < remote.txt
+
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::One or more image references are broken - the live site will show blank frames."
+            exit 1
+          fi
+          echo "All image references resolved."
