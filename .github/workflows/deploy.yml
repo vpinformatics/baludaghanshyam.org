@@ -91,11 +91,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          # --delete is deliberately NOT used by default. This directory may
-          # hold server-side files that are not in the repo (compose files,
-          # nginx config, uploads); deleting them would break the site.
-          # Set the DEPLOY_DELETE variable to "true" only once you have
-          # confirmed the directory holds nothing but the published site.
+          # --delete is off by default so a stray server-side file can never
+          # be silently removed from production.
+          #
+          # Checked 2026-08-16: the target directory held only index.html,
+          # logo.jpg and the two murti images - no compose file, no nginx
+          # config - so enabling --delete is safe as things stand. Set the
+          # DEPLOY_DELETE repository variable to "true" to turn it on, which
+          # also clears out stale files that have been dropped from the repo.
           DELETE_FLAG=""
           if [ "${{ vars.DEPLOY_DELETE || 'false' }}" = "true" ]; then
             DELETE_FLAG="--delete"
