@@ -85,10 +85,6 @@
             background: radial-gradient(circle, transparent 50%, rgba(94, 0, 0, 0.15) 150%);
         }
 
-        .vintage-filter {
-            filter: sepia(0.08) contrast(1.02);
-        }
-
         .fade-up {
             opacity: 0;
             transform: translateY(40px);
@@ -164,7 +160,7 @@
         }
     </style>
 </head>
-<body class="antialiased relative bg-[#F8F4E6] vintage-filter">
+<body class="antialiased relative bg-[#F8F4E6]">
 
     <!-- Overlays -->
     <div class="vintage-overlay noise-bg"></div>
@@ -288,7 +284,7 @@
     </div>
 
     <!-- WHATSAPP STATUS STORIES OVERLAY MODAL -->
-    <div id="story-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-[100000]" style="display: none;">
+    <div id="story-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-[100000]" style="display: none;" onclick="if(event.target === this) closeStory()">
         <button onclick="closeStory()" class="absolute top-4 right-4 text-white/80 hover:text-[#D4AF37] text-3xl z-[100010] p-2 focus:outline-none transition-colors">
             <i class="fa-solid fa-xmark"></i>
         </button>
@@ -327,7 +323,7 @@
     </div>
 
     <!-- DONATION OVERLAY MODAL -->
-    <div id="donate-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100000]" style="display: none;">
+    <div id="donate-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100000]" style="display: none;" onclick="if(event.target === this) closeDonateModal()">
         <div class="relative w-full max-w-lg bg-[#F8F4E6] border-2 border-[#D4AF37] rounded-xl p-6 sm:p-8 shadow-2xl vintage-frame">
             <button onclick="closeDonateModal()" class="absolute top-4 right-4 text-heritage-darkRed hover:text-heritage-gold text-2xl p-1 focus:outline-none">
                 <i class="fa-solid fa-xmark"></i>
@@ -1163,6 +1159,20 @@
                 console.error('Copy error:', err);
             });
         }
+
+        // Keyboard navigation and modal dismissal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeStory();
+                closeDonateModal();
+            } else if (e.key === 'ArrowLeft') {
+                const modal = document.getElementById('story-modal');
+                if (modal && modal.style.display === 'flex') prevStorySlide();
+            } else if (e.key === 'ArrowRight') {
+                const modal = document.getElementById('story-modal');
+                if (modal && modal.style.display === 'flex') nextStorySlide();
+            }
+        });
 
         // Mobile Menu Toggle
         const btn = document.getElementById('mobile-menu-btn');
